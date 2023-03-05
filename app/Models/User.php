@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Str;
 
 class User extends Authenticatable
 {
@@ -21,6 +22,8 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
+        'github_id',
+        'github_url',
     ];
 
     /**
@@ -39,6 +42,17 @@ class User extends Authenticatable
      * @var array<string, string>
      */
     protected $casts = [
+        'id' => 'string',
         'email_verified_at' => 'datetime',
     ];
+
+    public $incrementing = false;
+
+    protected static function boot()
+    {
+        parent::boot();
+        static::creating(function ($query) {
+            $query->id = Str::uuid();
+        });
+    }
 }
