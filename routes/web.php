@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Laravel\Socialite\Facades\Socialite;
 
 /*
 |--------------------------------------------------------------------------
@@ -14,19 +13,27 @@ use Laravel\Socialite\Facades\Socialite;
 |
 */
 
-Route::get('/', function () {
-    return view('welcome');
-});
+Route::get(
+    '/',
+    function () {
+        if (auth()->check()) {
+            return redirect('home');
+        }
 
-Route::get('auth/github', function () {
-    return Socialite::driver('github')->redirect();
-});
- 
-Route::get('/auth/redirect', function () {
-    return Socialite::driver('github')->redirect();
-});
- 
-Route::get('/auth/callback', function () {
-    $user = Socialite::driver('github')->user();
-    dump($user);die;
-});
+            return view('login');
+    }
+)->name('login');
+
+Route::get('auth/github', 'App\Http\Controllers\AuthController@gitRedirect');
+Route::get('auth/github/callback', 'App\Http\Controllers\AuthController@gitLoginCallback');
+
+Route::group(
+    [
+        'middleware' => 'auth'
+    ],
+    function ($router) {
+        Route::get('auth/github/logout', 'App\Http\Controllers\AuthController@logout');
+        Route::get('home', 'App\Http\Controllers\AppController@index');
+        Route::get('weather', 'App\Http\Controllers\AppController@weather');
+    }
+);
